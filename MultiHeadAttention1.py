@@ -218,7 +218,7 @@ class Actor_Attention(nn.Module):
         #scaled_dot_product_cat = torch.cat((scaled_dot_product1, scaled_dot_product2), dim=2)
         #scaled_attention_logits = self.FC1(scaled_dot_product_cat)  # (batch,seq,1)
         scaled_attention_logits =scaled_dot_product1
-        print(scaled_attention_logits.shape)
+        
         if mask is not None:
             scaled_attention_logits += (mask * -1e9)
         max_scores, _ = torch.max(scaled_attention_logits, dim=1, keepdim=True)
@@ -230,7 +230,11 @@ class Actor_Attention(nn.Module):
         
         if mask is not None:
             output += (mask * -1e9)
+        
         max_scores, _ = torch.max(output, dim=1, keepdim=True)
+        print(max_scores)
+        min_scores, _ = torch.min(output, dim=1, keepdim=True)
+        print(min_scores)
         output = output - max_scores
         output = F.softmax(output, dim=1)  # #(batch,seq,1)
         return output, attention_weights

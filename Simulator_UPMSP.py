@@ -139,7 +139,7 @@ class UPMSPScheduler:
             machine_state = machine_end_times.copy()
             job_state = torch.tensor(job_state, dtype=torch.float32).unsqueeze(0).to(device)
             machine_state = torch.tensor(machine_state, dtype=torch.float32).unsqueeze(0).to(device)
-
+            
             action, pi = self.ppo.get_action(job_state, machine_state, mask)
 
             job_index = action.item()

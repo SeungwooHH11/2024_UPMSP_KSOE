@@ -36,23 +36,24 @@ class MultiHeadAttention(nn.Module):
         if mask is not None:
             mask_expanded = mask.unsqueeze(1)
             scores = scores.masked_fill(mask_expanded == 0, -1e9)
-        print(scores)
         max_scores, _ = torch.max(scores, dim=-1, keepdim=True)
         scores = scores - max_scores
         scores = F.softmax(scores, dim=-1)
         output = torch.matmul(scores, v)
-        print(output)
+        
         return output
 
     def forward(self, q, k, v, mask=None):
         batch_size = q.size(0)
-
+        print(q.shape,k.shape,v.shape)
         # Linear projection and split into num_heads
         q = self.q_linear(q).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
         # (batch_size, num_heads, seq_len, d_k)
         k = self.k_linear(k).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
         v = self.v_linear(v).view(batch_size, -1, self.num_heads, self.d_k).transpose(1, 2)
-
+        print(q)
+        print(k)
+        print(v)
         # Apply attention on all the projected vectors
         attn_output = self.attention(q, k, v, mask)
         # attn_output: batch_size, num_heads, seq_len, d_k

@@ -227,6 +227,8 @@ class Actor_Attention(nn.Module):
         
         if mask is not None:
             output += (mask * -1e9)
+        max_scores, _ = torch.max(output, dim=1, keepdim=True)
+        output = output - max_scores
         output = F.softmax(output, dim=1)  # #(batch,seq,1)
         return output, attention_weights
 

@@ -68,7 +68,7 @@ class FeedForward(nn.Module):
 
 
 class TransformerEncoderLayer(nn.Module):
-    def __init__(self, d_model, num_heads, dim_feedforward, dropout=0.1):
+    def __init__(self, d_model, num_heads, dim_feedforward, dropout=0):
         super(TransformerEncoderLayer, self).__init__()
         self.self_attn = MultiHeadAttention(d_model, num_heads)
         self.feed_forward = FeedForward(d_model, dim_feedforward)
@@ -80,10 +80,10 @@ class TransformerEncoderLayer(nn.Module):
     def forward(self, src, src_mask=None):
         src2 = self.self_attn(src, src, src, src_mask)
         src = src + self.dropout1(src2)
-        src = self.norm1(src)  # layer norm
+        #src = self.norm1(src)  # layer norm
         src2 = self.feed_forward(src)
         src = src + self.dropout2(src2)
-        src = self.norm2(src)  # layer norm
+        #src = self.norm2(src)  # layer norm
         return src
 
 

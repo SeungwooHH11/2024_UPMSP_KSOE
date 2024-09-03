@@ -269,7 +269,7 @@ class PPO(nn.Module):
         
         output, attention_weights = self.AA(tnh, enh, enh, mask_seq.unsqueeze(2))  # (batch,seq,1)
         output = output.squeeze(-1)
-        print(output)
+        
         samples = torch.multinomial(output, 1)  # (B, 1) 크기의 인덱스 텐서
         if ans!=None:
             pi = output.squeeze(-1).gather(1, ans)

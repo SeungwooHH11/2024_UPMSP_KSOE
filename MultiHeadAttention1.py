@@ -160,11 +160,12 @@ class Critic_Attention(nn.Module):
 
         dot_product1 = torch.sum(key * query_1, dim=-1, keepdim=True)
         #dot_product2 = torch.sum(key * query_2, dim=-1, keepdim=True)
-
+        print(fea)
         scaled_attention_logits = dot_product1 / torch.sqrt(torch.tensor(fea, dtype=torch.float32))
         #scaled_dot_product2 = dot_product2 / torch.sqrt(torch.tensor(fea, dtype=torch.float32))
         #scaled_dot_product_cat = torch.cat((scaled_dot_product1, scaled_dot_product2), dim=2)  # (batch,seq,2)
         #scaled_attention_logits = self.FC1(scaled_dot_product1)  # (batch,seq,1)
+        print(scaled_attention_logits)
         if mask is not None:
             scaled_attention_logits =scaled_attention_logits.masked_fill(mask == 1, 0) 
         

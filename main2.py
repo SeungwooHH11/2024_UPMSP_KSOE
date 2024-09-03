@@ -1,4 +1,4 @@
-import torch
+import torch, gc
 import numpy as np
 
 torch.backends.cudnn.benchmark = True
@@ -7,6 +7,8 @@ from MultiHeadAttention1 import *
 import os
 import vessl
 
+gc.collect()
+torch.cuda.empty_cache()
 np.random.seed(1)
 random.seed(1)
 torch.manual_seed(1)

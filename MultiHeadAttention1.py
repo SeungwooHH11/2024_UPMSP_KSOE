@@ -36,11 +36,12 @@ class MultiHeadAttention(nn.Module):
         if mask is not None:
             mask_expanded = mask.unsqueeze(1)
             scores = scores.masked_fill(mask_expanded == 0, -1e9)
+        print(scores)
         max_scores, _ = torch.max(scores, dim=-1, keepdim=True)
         scores = scores - max_scores
         scores = F.softmax(scores, dim=-1)
         output = torch.matmul(scores, v)
-        
+        print(output)
         return output
 
     def forward(self, q, k, v, mask=None):
@@ -112,12 +113,7 @@ class Transformer(nn.Module):
         self.embedding = nn.Linear(input_fea_len, d_model)
         encoder_layer = TransformerEncoderLayer(d_model, num_heads, dim_feedforward)
         self.encoder = TransformerEncoder(encoder_layer, num_layers)
-        self.query_W = nn.Linear(d_model, d_model)
-        self.key_W = nn.Linear(d_model, d_model)
-        self.value_W = nn.Linear(d_model, d_model)
-        self.FC1 = nn.Linear(2, 1)
-        self.FC2 = nn.Linear(d_model, 1)
-
+        
     def forward(self, src, src_mask=None):
         src = self.embedding(src)
         output = self.encoder(src, src_mask)
@@ -232,9 +228,8 @@ class Actor_Attention(nn.Module):
             output += (mask * -1e9)
         
         max_scores, _ = torch.max(output, dim=1, keepdim=True)
-        print(max_scores)
+        
         min_scores, _ = torch.min(output, dim=1, keepdim=True)
-        print(min_scores)
         output = output - max_scores
         output = F.softmax(output, dim=1)  # #(batch,seq,1)
         return output, attention_weights

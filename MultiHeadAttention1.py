@@ -220,8 +220,10 @@ class Actor_Attention(nn.Module):
         
         if mask is not None:
             scaled_attention_logits += (mask * -1e9)
-        
+        max_scores, _ = torch.max(scaled_attention_logits, dim=1, keepdim=True)
+        scaled_attention_logits = scaled_attention_logits - max_scores
         attention_weights = F.softmax(scaled_attention_logits, dim=1)  # (batch,seq,1)
+        
         output = attention_weights * value  # (batch,seq,1) , (batch,seq,dim)
         output = self.FC2(output)  # (batch,seq,1)
         

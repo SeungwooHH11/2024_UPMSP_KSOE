@@ -1,6 +1,6 @@
 import random
 import pandas as pd
-
+import numpy as np
 from MultiHeadAttention1 import *
 import matplotlib.pyplot as plt
 random.seed(42)

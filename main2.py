@@ -25,7 +25,7 @@ if __name__ == "__main__":
         os.makedirs(history_dir)
 
     device = 'cuda'
-    ppo = PPO(learning_rate=0.001, clipping_ratio=0.2, machine_len=12, d_model=512, num_heads=8, num_layers=3,
+    ppo = PPO(learning_rate=0.001, clipping_ratio=0.2, machine_len=12, d_model=512, num_heads=8, num_layers=2,
               dim_feedforward=1024).to(device)
 
     UPMSP = UPMSPScheduler(num_machines=12, initial_jobs=80, additional_jobs=10, additional_arrivals=5,
@@ -34,8 +34,8 @@ if __name__ == "__main__":
 
     number_of_validation = 20
     number_of_validation_batch = 50
-    number_of_problem = 5  # 한번에 몇개의 문제를
-    number_of_batch = 10  # 문제당 몇 episode씩 한번에 학습할껀지
+    number_of_problem = 4  # 한번에 몇개의 문제를
+    number_of_batch = 8  # 문제당 몇 episode씩 한번에 학습할껀지
     number_of_trial = 1  # 1, 10, 100, 1000 #이를 몇번 반복할껀지
     number_of_iteration = int(1001 / number_of_trial)  # 전체 iteration #iteration 단위로 문제 변화
     validation = []

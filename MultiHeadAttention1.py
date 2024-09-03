@@ -218,7 +218,7 @@ class Actor_Attention(nn.Module):
         #scaled_dot_product_cat = torch.cat((scaled_dot_product1, scaled_dot_product2), dim=2)
         #scaled_attention_logits = self.FC1(scaled_dot_product_cat)  # (batch,seq,1)
         scaled_attention_logits =scaled_dot_product1
-        print(scaled_attention_logits)
+        print(scaled_attention_logits.shape)
         if mask is not None:
             scaled_attention_logits += (mask * -1e9)
         max_scores, _ = torch.max(scaled_attention_logits, dim=1, keepdim=True)
@@ -274,7 +274,7 @@ class PPO(nn.Module):
         enh = self.encoder(job_state, mask)
         x = F.relu(self.linear1(machine_state))
         tnh = self.linear2(x).unsqueeze(1)
-        print(enh)
+        print(enh.shape)
         output, attention_weights = self.AA(tnh, enh, enh, mask_seq.unsqueeze(2))  # (batch,seq,1)
         output = output.squeeze(-1)
         

@@ -303,7 +303,7 @@ class PPO(nn.Module):
 
             state_v = self.calculate_v(job_states, machine_states,masks)
             state_next_v = state_v[1:].clone()
-            zero_row = torch.zeros(1, 1)
+            zero_row = torch.zeros(1, 1).to(device)
             state_next_v = torch.cat((state_next_v, zero_row), dim=0)
             td_target = rewards + self.gamma * state_next_v * dones
             delta = td_target - state_v

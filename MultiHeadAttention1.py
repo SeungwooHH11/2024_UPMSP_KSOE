@@ -296,17 +296,15 @@ class PPO(nn.Module):
         dones = torch.tensor(dones).unsqueeze(1).to(device)
         masks = [item[6] for item in episode]  # (1,seq)
         masks = torch.stack(masks, dim=0).squeeze(1).to(device)
-        next_job_states = [item[7] for item in episode]
-        next_job_states = torch.stack(next_job_states, dim=0).squeeze(1).to(device)
-        next_machine_states = [item[8] for item in episode]
-        next_machine_states = torch.stack(next_machine_states, dim=0).squeeze(1).to(device)
+        
         for _ in range(k_epoch):
             
             _,pi_new = self.get_action(job_states, machine_states,masks, actions)
 
             state_v = self.calculate_v(job_states, machine_states,masks)
-            state_next_v = self.calculate_v(next_job_states, next_machine_states,masks)
-            
+            state_next_v = state_v[1:].clone()
+            zero_row = torch.zeros(1, 1)
+            state_next_v = torch.cat((state_next_v, zero_row), dim=0)
             td_target = rewards + self.gamma * state_next_v * dones
             delta = td_target - state_v
             advantage_lst = np.zeros(len(episode))

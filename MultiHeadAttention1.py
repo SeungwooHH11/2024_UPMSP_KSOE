@@ -5,7 +5,9 @@ import math
 import torch.optim as optim
 import numpy as np
 device='cuda'
-
+np.random.seed(1)
+random.seed(1)
+torch.manual_seed(1)
 class MultiHeadAttention(nn.Module):
     def __init__(self, d_model, num_heads):
         super(MultiHeadAttention, self).__init__()

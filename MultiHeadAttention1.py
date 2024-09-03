@@ -278,7 +278,7 @@ class PPO(nn.Module):
         enh = self.encoder(job_state, mask)
         x = F.relu(self.linear1(machine_state))
         tnh = self.linear2(x).unsqueeze(1)
-        print(enh.shape)
+        
         output, attention_weights = self.AA(tnh, enh, enh, mask_seq.unsqueeze(2))  # (batch,seq,1)
         output = output.squeeze(-1)
         

@@ -36,8 +36,11 @@ class MultiHeadAttention(nn.Module):
         if mask is not None:
             mask_expanded = mask.unsqueeze(1)
             scores = scores.masked_fill(mask_expanded == 0, -1e9)
+        max_scores, _ = torch.max(scores, dim=-1, keepdim=True)
+        scores = scores - max_scores
         scores = F.softmax(scores, dim=-1)
         output = torch.matmul(scores, v)
+        
         return output
 
     def forward(self, q, k, v, mask=None):

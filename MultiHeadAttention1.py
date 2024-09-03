@@ -115,7 +115,8 @@ class Transformer(nn.Module):
         
     def forward(self, src, src_mask=None):
         print(src)
-        
+        has_nan = torch.isnan(src).any()
+        print(has_nan)
         src = self.embedding(src)
         print(src)
         

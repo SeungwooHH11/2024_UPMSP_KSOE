@@ -94,7 +94,7 @@ if __name__ == "__main__":
         history[i, 0] = total_tardy
         vessl.log(step=i, payload={'train_average_reward': total_tardy})
 
-        if i % validation_step == 1:
+        if i % validation_step == 99:
             valid_tardy = []
             best_tardy = []
             avve_tardy = 0

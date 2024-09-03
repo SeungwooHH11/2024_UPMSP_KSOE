@@ -6,8 +6,9 @@ import matplotlib.pyplot as plt
 random.seed(42)
 device = 'cuda'
 import torch
-
-
+np.random.seed(1)
+random.seed(1)
+torch.manual_seed(1)
 class UPMSPScheduler:
     def __init__(self, num_machines=12, initial_jobs=80, additional_jobs=10, additional_arrivals=5,
                  processing_time_range=(5, 15), tardy_time_range=(5, 15), start_additional_arrival=20,

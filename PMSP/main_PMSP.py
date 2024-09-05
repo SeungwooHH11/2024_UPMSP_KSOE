@@ -23,7 +23,7 @@ if __name__=="__main__":
         os.makedirs(history_dir)
 
     device='cuda'
-    ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, job_len=130,machine_len=12, d_model=128, num_heads=2, fea_len=6,num_layers=1,dim_feedforward=1024).to(device)
+    ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, job_len=130,machine_len=12, d_model=128, num_heads=2, fea_len=6,num_layers=1,dim_feedforward=256).to(device)
     PMSP=PMSPScheduler(num_machines=12, initial_jobs=80, additional_jobs=10, additional_arrivals=5, processing_time_range=(5, 15), machine_speed=[1,1,1,1,1,1,1.5,1.5,1.5,1.5,1.5,1.5], start_additional_arrival=20, arrival_interval=10,setup_range=(10,10),family_setup_num=10)
     number_of_validation=20
     number_of_validation_batch=50

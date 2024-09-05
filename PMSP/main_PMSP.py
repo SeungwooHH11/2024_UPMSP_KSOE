@@ -104,7 +104,7 @@ if __name__=="__main__":
                 avve_tardy+=(ave_tardy/number_of_validation_batch)
             
             valid_step+=1
-            print(avve_tardy/number_of_validation)
+            
             vessl.log(step=i, payload={'valid_average':avve_tardy/number_of_validation})
             
                 

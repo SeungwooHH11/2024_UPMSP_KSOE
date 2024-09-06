@@ -146,8 +146,8 @@ class PPO(nn.Module):
     def __init__(self, learning_rate=0.001, clipping_ratio=0.2, job_len=130, machine_len=12, d_model=512, num_heads=16, fea_len=6,num_layers=3,
                  dim_feedforward=1024):
         super(PPO, self).__init__()
-        
-        self.encoder = Transformer(fea_len, d_model, num_heads, num_layers, dim_feedforward)
+        self.encoder2 = Transformer(fea_len, d_model, num_heads, num_layers, dim_feedforward)
+        self.encoder1 = Transformer(fea_len, d_model, num_heads, num_layers, dim_feedforward)
         #self.decoder = Transformer(machine_fea_len, d_model, num_heads, num_layers, dim_feedforward)
         self.optimizer = optim.Adam(self.parameters(), lr=learning_rate)
         self.gamma = 0.99
@@ -179,7 +179,7 @@ class PPO(nn.Module):
         machine_mask = torch.ones((batch, self.machine_len)).to(device)  # 예: (3, 2) 크기의 텐서
         total_mask = torch.cat((mask_seq.clone(), machine_mask), dim=1)
         mask = self.create_masking(total_mask)
-        enh = self.encoder(state, mask) #(batch,n+m,fea)
+        enh = self.encoder1(state, mask) #(batch,n+m,fea)
         tensor = enh[:, :self.job_len, :]
         #mask masking=0
         
@@ -211,7 +211,7 @@ class PPO(nn.Module):
         total_mask = torch.cat((mask_seq.clone(), machine_mask), dim=1)
         
         mask = self.create_masking(total_mask)
-        enh = self.encoder(state, mask) #(batch,n+m,fea)
+        enh = self.encoder2(state, mask) #(batch,n+m,fea)
         fea=enh.shape[2]
         if mask is not None:
             mask_expanded = total_mask.unsqueeze(2).repeat(1,1,fea)

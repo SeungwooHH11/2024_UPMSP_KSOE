@@ -84,8 +84,13 @@ if __name__=="__main__":
         
         ave_loss, v_loss, p_loss = ppo.update(episode, k_epoch, i,model_dir)
         history[i,0]=total_tardy
-        print(total_tardy)
+        
         vessl.log(step=i, payload={'train_average_reward': total_tardy})
+        vessl.log(step=i, payload={'ave_loss': ave_loss})
+        vessl.log(step=i, payload={'v_loss': v_loss})
+        vessl.log(step=i, payload={'pi_loss': pi_loss})
+        
+
         
         if i%validation_step==0:
             valid_tardy=[]

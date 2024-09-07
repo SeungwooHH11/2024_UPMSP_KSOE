@@ -66,7 +66,7 @@ class PMSPScheduler:
         # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
         tardy_occured = job_u_s[:,-3].sum()
         not_processed=job_u_s[job_u_s[:,-1]==0].copy()
-        tardy_yet=np.maximum(not_processed[:,2]+current_time-not_processed[:,-3],0).sum()
+        tardy_yet=np.maximum(not_processed[:,2]+current_time-not_processed[:,-4],0).sum()
         return tardy_occured+tardy_yet
  
     

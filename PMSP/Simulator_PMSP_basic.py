@@ -126,7 +126,7 @@ class PMSPScheduler:
             state[job_len:,3:]=machine_matrix
 
             
-            state_tensor=torch.tensor(state.copy(),dtype=torch.float32).unsqueeze(0).to(device)/20.0 # batch, n+m, fea
+            state_tensor=torch.tensor(state.copy(),dtype=torch.float32).unsqueeze(0).to(device)/100.0 # batch, n+m, fea
             
             action,pi=ppo.get_action(state_tensor,mask,ans=None)
             job_index=action.item()
@@ -139,7 +139,7 @@ class PMSPScheduler:
             total_tardy+=max((current_time+machine_matrix[chosen_index,0])-jobs_u_s[job_index][-4],0)
             # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
             jobs_u_s[job_index][-3]=max((current_time+machine_matrix[chosen_index,0])-jobs_u_s[job_index][-4],0)
-            tardy=self.calculate_tardy(jobs_u_s,current_time)
+            tardy=self.calculate_tardy(jobs_u_s,current_time)/100.0
             reward=past_tardy-tardy
             total_reward+=reward
             past_tardy=tardy

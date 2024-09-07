@@ -269,10 +269,8 @@ class PPO(nn.Module):
             ratio = torch.exp(torch.log(pi_new) - torch.log(pi_old))  # a/b == exp(log(a)-log(b))
             surr1 = ratio * advantage_lst
             surr2 = torch.clamp(ratio, 1 - self.epsilon, 1 + self.epsilon) * advantage_lst
-            loss = -torch.min(surr1, surr2) + F.smooth_l1_loss(state_v, td_target.detach()) * 
-            self.optimizer.zero_grad()
-            loss.mean().backward()
-            self.optimizer.step()
+            loss = -torch.min(surr1, surr2) + F.smooth_l1_loss(state_v, td_target.detach()) * self.alpha
+            
         
             ave_loss = loss.mean().item()
             v_loss = (self.alpha * F.smooth_l1_loss(state_v, td_target.detach())).item()

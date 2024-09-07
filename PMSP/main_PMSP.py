@@ -23,12 +23,12 @@ if __name__=="__main__":
         os.makedirs(history_dir)
 
     device='cuda'
-    ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, job_len=130,machine_len=12, d_model=256, num_heads=4, fea_len=6,num_layers=2,dim_feedforward=512).to(device)
+    ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, job_len=130,machine_len=12, d_model=256, num_heads=8, fea_len=6,num_layers=1,dim_feedforward=512).to(device)
     PMSP=PMSPScheduler(num_machines=12, initial_jobs=80, additional_jobs=10, additional_arrivals=5, processing_time_range=(5, 15), machine_speed=[1,1,1,1,1,1,1.5,1.5,1.5,1.5,1.5,1.5], start_additional_arrival=20, arrival_interval=10,setup_range=(10,10),family_setup_num=8)
     number_of_validation=20
     number_of_validation_batch=50
-    number_of_problem=3# 한번에 몇개의 문제를
-    number_of_batch=8 # 문제당 몇 episode씩 한번에 학습할껀지
+    number_of_problem=4# 한번에 몇개의 문제를
+    number_of_batch=16 # 문제당 몇 episode씩 한번에 학습할껀지
     number_of_trial=1  #1, 10, 100, 1000 #이를 몇번 반복할껀지
     number_of_iteration=int(3001/number_of_trial)  # 전체 iteration #iteration 단위로 문제 변화
     validation=[]

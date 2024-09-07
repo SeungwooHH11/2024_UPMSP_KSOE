@@ -126,7 +126,7 @@ class PMSPScheduler:
             state[job_len:,3:]=machine_matrix
 
             
-            state_tensor=torch.tensor(state.copy(),dtype=torch.float32).unsqueeze(0).to(device) # batch, n+m, fea
+            state_tensor=torch.tensor(state.copy(),dtype=torch.float32).unsqueeze(0).to(device)/20.0 # batch, n+m, fea
             
             action,pi=ppo.get_action(state_tensor,mask,ans=None)
             job_index=action.item()

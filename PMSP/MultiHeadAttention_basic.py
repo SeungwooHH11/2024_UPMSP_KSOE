@@ -217,7 +217,7 @@ class PPO(nn.Module):
             mask_expanded = total_mask.unsqueeze(2).repeat(1,1,fea)
             
             enh ==enh.masked_fill(mask_expanded == 0, 0) 
-        enh=torch.sum(enh, dim=1, keepdim=True) 
+        enh=torch.mean(enh, dim=1, keepdim=True) 
         state_value=self.CA(enh).squeeze(-1) #(batch,1,fea)
         
         return state_value

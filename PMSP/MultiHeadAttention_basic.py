@@ -301,8 +301,8 @@ class PPO(nn.Module):
         if step1 % 100 == 0:
             torch.save({
                 'model_state_dict': self.state_dict(),
-                'optimizer_state_dict': self.optimizer.state_dict(),
-
+                'optimizer_state_v_dict': self.optimizer_value.state_dict(),
+                'optimizer_state_p_dict': self.optimizer_policy.state_dict(),
             }, model_dir+'trained_model' + str(step1) + '.pth')
 
         return ave_loss, v_loss, p_loss

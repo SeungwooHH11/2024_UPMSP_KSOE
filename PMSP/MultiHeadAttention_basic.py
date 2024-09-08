@@ -149,7 +149,8 @@ class PPO(nn.Module):
         self.encoder2 = Transformer(fea_len, d_model, num_heads, num_layers, dim_feedforward)
         self.encoder1 = Transformer(fea_len, d_model, num_heads, num_layers, dim_feedforward)
         #self.decoder = Transformer(machine_fea_len, d_model, num_heads, num_layers, dim_feedforward)
-        self.optimizer = optim.Adam(self.parameters(), lr=learning_rate)
+        self.optimizer_policy = optim.Adam(self.parameters(), lr=learning_rate)
+        self.optimizer_value = optim.Adam(self.parameters(), lr=learning_rate)
         self.gamma = 0.99
         self.lmbda = 0.95
         self.epsilon=clipping_ratio

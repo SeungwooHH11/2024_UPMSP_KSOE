@@ -70,7 +70,7 @@ class PMSPScheduler:
         return tardy_occured+tardy_yet
  
     
-    def schedule_jobs(self,jobs,episode,ppo):
+    def schedule_jobs(self,jobs,episode,ppo,mod):
         machines = []
         jobss = []
         start_times = []  # start times as floats
@@ -127,8 +127,12 @@ class PMSPScheduler:
 
             
             state_tensor=torch.tensor(state.copy(),dtype=torch.float32).unsqueeze(0).to(device)/100.0 # batch, n+m, fea
+            if mod=='RL':
+                action,pi=ppo.get_action(state_tensor,mask,ans=None)
+            if mod=='SSPT':
+                
             
-            action,pi=ppo.get_action(state_tensor,mask,ans=None)
+            
             job_index=action.item()
             # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
             machine_matrix[chosen_index,0]=jobs_u_s[job_index][2]/machine_matrix[chosen_index,2]+self.setup[int(machine_matrix[chosen_index,1])][int(jobs_u_s[job_index][3])]
@@ -187,14 +191,14 @@ class PMSPScheduler:
 
         plt.show()
     
-    def run_simulation(self,cat_num,cat_num2,ppo):
+    def run_simulation(self,cat_num,cat_num2,ppo,mod):
         episode=[]
         ave_tardy=[]
         for __ in range(cat_num):
             jobs=self.generate_jobs()
             jobs[:,1:]=jobs[:,1:].astype(float)
             for _ in range(cat_num2):  
-                machines,jobss,start_times,durations,episode,total_tardy,total_reward=self.schedule_jobs(jobs,episode,ppo)
+                machines,jobss,start_times,durations,episode,total_tardy,total_reward=self.schedule_jobs(jobs,episode,ppo,mod)
                 ave_tardy.append(total_tardy)
             #self.plot_gantt(machines,jobss,start_times,durations)
         ave_t=np.array(ave_tardy).mean()

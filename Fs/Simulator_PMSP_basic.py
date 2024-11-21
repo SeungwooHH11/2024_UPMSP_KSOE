@@ -193,6 +193,7 @@ class PMSPScheduler:
 
             state[:job_len,[0,1]]=jobs_u_s[:,[2,4]].copy()
             state[:job_len,1]=state[:job_len,1]-current_time
+            
 
             machine_pro = machine_matrix[chosen_index,:]
             
@@ -210,8 +211,8 @@ class PMSPScheduler:
                 machine_setup=state[i+job_len,5+self.setup_num]
                 state[i+job_len,5+self.setup_num]=0
                 state[i+job_len,5+self.setup_num+int(machine_setup)]=1
-                
-            
+            state[:,:3]=state[:,:3]/30
+            state[:,3+self.setup_num]=state[:,3+self.setup_num]/30
             #print(pd.DataFrame(state))
             state_tensor=torch.tensor(state.copy(),dtype=torch.float32).unsqueeze(0).to(device)/100.0 # batch, n+m, fea
             if mod=='RL':

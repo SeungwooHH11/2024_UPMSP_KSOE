@@ -48,7 +48,7 @@ if __name__=="__main__":
         validation_setup.append(setups.copy())
     
     
-
+    '''
     mode_list = ['SSPT', 'SST', 'FIFO', 'ATCS', 'MDD', 'COVERT']
     for e,priority in enumerate(mode_list):
         avve_tardy=0
@@ -65,7 +65,7 @@ if __name__=="__main__":
             control[e,j]=(ave_tardy/number_of_validation_batch)
             avve_tardy+=(ave_tardy/number_of_validation_batch)
         print(avve_tardy/number_of_validation)
-
+    '''
     
     valid_step=0
     k_epoch=2

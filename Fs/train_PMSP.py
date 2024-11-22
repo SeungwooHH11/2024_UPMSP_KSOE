@@ -24,8 +24,10 @@ if __name__=="__main__":
     device='cuda'
     
     #PMSP=PMSPScheduler(10,100,20,10,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,60,60,(5,15),10)
-    PMSP=PMSPScheduler(10,0,20,15,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,0,40,(5,15),10)
+    #PMSP=PMSPScheduler(10,0,20,15,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,0,40,(5,15),10)
     #PMSP=PMSPScheduler(10,300,20,0,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,60,60,(5,15),10)
+    
+    PMSP=PMSPScheduler(num_machines=16, initial_jobs=200, additional_jobs=10, additional_arrivals=6, processing_time_range=(5, 15), machine_speed=[1,1,1,1,1,1,1,1,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25], sim_type=0, start_additional_arrival=20, arrival_interval=10,setup_range=(5,15),family_setup_num=6)
     ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, machine_len=10, d_model=256, num_heads=4, fea_len=25,num_layers=1,dim_feedforward=512).to(device)
 
     number_of_validation=10

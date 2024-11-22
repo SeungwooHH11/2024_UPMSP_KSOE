@@ -15,8 +15,8 @@ device='cuda'
 
 
 class PMSPScheduler:
-    def __init__(self, num_machines=12, initial_jobs=80, additional_jobs=10, additional_arrivals=5, 
-                 processing_time_range=(5, 15), machine_speed=[1,1,1,1,1,1,1.5,1.5,1.5,1.5,1.5,1.5], sim_type=0, start_additional_arrival=20, arrival_interval=10,setup_range=(5,15),family_setup_num=10):
+    def __init__(self, num_machines=16, initial_jobs=200, additional_jobs=10, additional_arrivals=6, 
+                 processing_time_range=(5, 15), machine_speed=[1,1,1,1,1,1,1,1,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25], sim_type=0, start_additional_arrival=20, arrival_interval=10,setup_range=(5,15),family_setup_num=6):
         # 머신 개수
         self.num_machines = num_machines
         # 초기 작업
@@ -35,13 +35,13 @@ class PMSPScheduler:
         self.setup_num=family_setup_num
         # 원본 논문 세팅
         
-        self.tardiness_factor=0.1
-        self.duedate_range=0.5
+        self.tardiness_factor=0.2
+        self.duedate_range=0.2
         self.K=2
         self.sim_type=sim_type
         self.schedule = []
         self.machine_speed=machine_speed
-        self.MP=float((self.processing_time_range[0]+self.processing_time_range[1])*(initial_jobs+additional_jobs*additional_arrivals)/num_machines/2+(self.setup_range[0]+self.setup_range[1])/2*(self.setup_num+initial_jobs+additional_jobs*additional_arrivals)/2/self.num_machines)
+        self.MP=float((self.processing_time_range[0]+self.processing_time_range[1])*(initial_jobs+additional_jobs*additional_arrivals)/num_machines/2+10*(self.setup_num+initial_jobs+additional_jobs*additional_arrivals)/2/self.num_machines)
         if self.sim_type==0:
             print('MP: ',self.MP)
 

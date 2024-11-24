@@ -28,7 +28,7 @@ if __name__=="__main__":
     #PMSP=PMSPScheduler(10,300,20,0,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,60,60,(5,15),10)
     PMSP=PMSPScheduler(num_machines=6, initial_jobs=12, additional_jobs=12, additional_arrivals=1, processing_time_range=(10, 20), machine_speed=[1,1,1,1.5,1.5,1.5], sim_type=1, start_additional_arrival=50, arrival_interval=0,setup_range=(5,15),family_setup_num=4)
     #PMSP=PMSPScheduler(num_machines=16, initial_jobs=400, additional_jobs=15, additional_arrivals=8, processing_time_range=(5, 15), machine_speed=[1,1,1,1,1,1,1,1,1.25,1.25,1.25,1.25,1.25,1.25,1.25,1.25], sim_type=0, start_additional_arrival=20, arrival_interval=10,setup_range=(5,15),family_setup_num=8)
-    ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, machine_len=10, d_model=256, num_heads=4, fea_len=25,num_layers=1,dim_feedforward=512).to(device)
+    ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, machine_len=10, d_model=256, num_heads=4, fea_len=13,num_layers=1,dim_feedforward=512).to(device)
 
     number_of_validation=10
     number_of_validation_batch=100

@@ -336,6 +336,7 @@ class PMSPScheduler:
             job_index=action.item()
             # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
             machine_matrix[chosen_index,0]=jobs_u_s[job_index][2]/machine_matrix[chosen_index,1]+setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[job_index][3])]
+            temp_setup=setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[job_index][3])]
             machine_matrix[chosen_index,2]=jobs_u_s[job_index][3]
             jobs_u_s[job_index,-2]=0
             jobs_u_s[job_index,-1]=1
@@ -344,7 +345,7 @@ class PMSPScheduler:
             # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
             jobs_u_s[job_index][-3]=max((current_time+machine_matrix[chosen_index,0])-jobs_u_s[job_index][-4],0)
             tardy=self.calculate_tardy(jobs_u_s,current_time)/100.0
-            reward=past_tardy-tardy
+            reward=past_tardy-tardy-temp_setup/100.0
             total_reward+=reward
             past_tardy=tardy
             

@@ -32,15 +32,15 @@ if __name__=="__main__":
 
     number_of_validation=10
     number_of_validation_batch=100
-    number_of_problem=2# 한번에 몇개의 문제를
-    number_of_batch= 4# 문제당 몇 episode씩 한번에 학습할껀지
+    number_of_problem=5# 한번에 몇개의 문제를
+    number_of_batch= 20# 문제당 몇 episode씩 한번에 학습할껀지
     number_of_trial=1  #1, 10, 100, 1000 #이를 몇번 반복할껀지
-    number_of_iteration=int(2001/number_of_trial)  # 전체 iteration #iteration 단위로 문제 변화
+    number_of_iteration=int(1001/number_of_trial)  # 전체 iteration #iteration 단위로 문제 변화
     validation=[]
     validation_step = 100
     num_of_meta=6
     history = np.zeros((number_of_iteration * number_of_trial,2))
-    validation_history=np.zeros((int(2001/validation_step)+10,number_of_validation))
+    validation_history=np.zeros((int(1001/validation_step)+10,number_of_validation))
     control=np.zeros((num_of_meta,number_of_validation))
     validation_job=[]
     validation_setup=[]

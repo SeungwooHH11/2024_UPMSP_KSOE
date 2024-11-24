@@ -60,7 +60,7 @@ if __name__=="__main__":
                 setup=validation_setup[j]
                 episode=[]
                 machines,jobss,start_times,durations,episode,total_tardy,total_reward=PMSP.schedule_jobs(jobs,setup,episode,ppo,priority)
-                ave_tardy+=(total_tardy)
+                ave_tardy+=(total_reward)
                 temp_best_reward=min(temp_best_reward,total_tardy)
             control[e,j]=(ave_tardy/number_of_validation_batch)
             avve_tardy+=(ave_tardy/number_of_validation_batch)
@@ -73,7 +73,7 @@ if __name__=="__main__":
         total_tardy,ave_tardy,episode=PMSP.run_simulation(number_of_problem,number_of_batch,ppo,'RL')
         ave_loss, v_loss, p_loss = ppo.update(episode, 300 ,k_epoch, i,model_dir)
         history[i,0]=total_tardy
-        vessl.log(step=i, payload={'train_average_reward': total_tardy})
+        vessl.log(step=i, payload={'train_average_reward': total_reward})
         vessl.log(step=i, payload={'ave_loss': ave_loss})
         vessl.log(step=i, payload={'v_loss': v_loss})
         vessl.log(step=i, payload={'p_loss': p_loss})
@@ -92,7 +92,7 @@ if __name__=="__main__":
                     setup=validation_setup[j]
                     episode=[]
                     machines,jobss,start_times,durations,episode,total_tardy,total_reward=PMSP.schedule_jobs(jobs,setup,episode,ppo,'RL')
-                    ave_tardy+=(total_tardy)
+                    ave_tardy+=(total_reward)
                     temp_best_reward=min(temp_best_reward,total_tardy)
                 validation_history[valid_step,j]=(ave_tardy/number_of_validation_batch)
                 avve_tardy+=(ave_tardy/number_of_validation_batch)

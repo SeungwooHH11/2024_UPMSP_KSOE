@@ -37,7 +37,7 @@ class PMSPScheduler:
         
         self.tardiness_factor=0.2
         self.duedate_range=0.2
-        self.K=2
+        self.K=3
         self.sim_type=sim_type
         self.schedule = []
         self.machine_speed=machine_speed
@@ -61,7 +61,7 @@ class PMSPScheduler:
                 if self.sim_type==0:
                     tardy_time=np.random.uniform(max(arrival_time+processing_time+10,self.MP*(1-self.tardiness_factor-self.duedate_range/2)),self.MP*(1-self.tardiness_factor+self.duedate_range/2))
                 if self.sim_type==1:
-                    tardy_time=arrival_time+self.K*np.random.uniform(0.5,1.5)*((self.processing_time_range[0]+self.processing_time_range[1])/2+(self.setup_range[0]+self.setup_range[1])/2)
+                    tardy_time=arrival_time+np.random.uniform(1,self.K)*((self.processing_time_range[0]+self.processing_time_range[1])/2+(self.setup_range[0]+self.setup_range[1])/2)
                 setup_type=np.random.randint(0, self.setup_num)
                 property_j=[job_id,arrival_time,processing_time,setup_type,tardy_time,0.0,1.0, 0.0]
                 jobs = np.vstack([jobs, np.array(property_j)])
@@ -76,7 +76,7 @@ class PMSPScheduler:
                     if self.sim_type==0:
                         tardy_time=np.random.uniform(max(arrival_time+processing_time+10,self.MP*(1-self.tardiness_factor-self.duedate_range/2)),self.MP*(1-self.tardiness_factor+self.duedate_range/2))
                     if self.sim_type==1:
-                        tardy_time=arrival_time+self.K*np.random.uniform(0.5,1.5)*((self.processing_time_range[0]+self.processing_time_range[1])/2+(self.setup_range[0]+self.setup_range[1])/2)
+                        tardy_time=arrival_time+np.random.uniform(1,self.K)*((self.processing_time_range[0]+self.processing_time_range[1])/2+(self.setup_range[0]+self.setup_range[1])/2)
                     setup_type=np.random.randint(0, self.setup_num)
                     property_j=[job_id,arrival_time,processing_time,setup_type,tardy_time,0.0,0.0, 0.0]
                     jobs = np.vstack([jobs, np.array(property_j)])

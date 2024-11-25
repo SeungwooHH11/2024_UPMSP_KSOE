@@ -68,7 +68,7 @@ class PMSPScheduler:
                 job_count+=1
             
             for j in range(self.additional_arrivals):
-                int_ar=np.uniform(self.arrival_interval*0.5,self.arrival_interval*1.5)
+                int_ar=np.random.uniform(self.arrival_interval*0.5,self.arrival_interval*1.5)
                 arrival_time +=int_ar
                 #arrival_time = self.start_additional_arrival + j * self.arrival_interval
                 

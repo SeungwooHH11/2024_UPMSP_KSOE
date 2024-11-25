@@ -70,10 +70,10 @@ if __name__=="__main__":
     k_epoch=2
     for i in range(number_of_iteration):
         
-        total_tardy,ave_tardy,episode=PMSP.run_simulation(number_of_problem,number_of_batch,ppo,'RL')
+        ave_r,ave_reward,episode=PMSP.run_simulation(number_of_problem,number_of_batch,ppo,'RL')
         ave_loss, v_loss, p_loss = ppo.update(episode, 24 ,k_epoch, i,model_dir)
         history[i,0]=total_tardy
-        vessl.log(step=i, payload={'train_average_reward': total_reward})
+        vessl.log(step=i, payload={'train_average_reward': ave_reward})
         vessl.log(step=i, payload={'ave_loss': ave_loss})
         vessl.log(step=i, payload={'v_loss': v_loss})
         vessl.log(step=i, payload={'p_loss': p_loss})

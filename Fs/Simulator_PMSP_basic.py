@@ -403,10 +403,10 @@ class PMSPScheduler:
             jobs[:,1:]=jobs[:,1:].astype(float)
             for _ in range(sim_num):
                 machines,jobss,start_times,durations,episode,total_tardy,total_reward=self.schedule_jobs(jobs,setup,episode,ppo,mod)
-                ave_tardy.append(total_tardy)
+                ave_reward.append(total_reward)
             #self.plot_gantt(machines,jobss,start_times,durations)
-        ave_t=np.array(ave_tardy).mean()
-        return ave_t,ave_tardy,episode
+        ave_r=np.array(ave_reward).mean()
+        return ave_r,ave_reward,episode
 # 결과를 저장할 경우
     
 # schedule_df.to_csv("schedule_results.csv", index=False) '''

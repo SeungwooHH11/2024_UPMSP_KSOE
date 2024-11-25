@@ -66,9 +66,12 @@ class PMSPScheduler:
                 property_j=[job_id,arrival_time,processing_time,setup_type,tardy_time,0.0,1.0, 0.0]
                 jobs = np.vstack([jobs, np.array(property_j)])
                 job_count+=1
-
+            
             for j in range(self.additional_arrivals):
-                arrival_time = self.start_additional_arrival + j * self.arrival_interval
+                int_ar=np.uniform(self.arrival_interval*0.5,self.arrival_interval*1.5)
+                arrival_time +=int_ar
+                #arrival_time = self.start_additional_arrival + j * self.arrival_interval
+                
 
                 for k in range(self.additional_jobs):
                     job_id = job_count

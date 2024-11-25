@@ -400,7 +400,7 @@ class PMSPScheduler:
 
     def run_simulation(self,pr,sim_num,ppo,mod):
         episode=[]
-        ave_tardy=[]
+        ave_reward=[]
         for __ in range(pr):
             jobs,setup=self.generate_jobs()
             jobs[:,1:]=jobs[:,1:].astype(float)

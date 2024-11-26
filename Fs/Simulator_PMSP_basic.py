@@ -37,7 +37,7 @@ class PMSPScheduler:
         
         self.tardiness_factor=0.2
         self.duedate_range=0.2
-        self.K=3
+        self.K=2
         self.sim_type=sim_type
         self.schedule = []
         self.machine_speed=machine_speed

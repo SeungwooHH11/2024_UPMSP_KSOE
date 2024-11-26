@@ -73,7 +73,7 @@ if __name__=="__main__":
         ave_r,ave_reward,episode=PMSP.run_simulation(number_of_problem,number_of_batch,ppo,'RL')
         ave_loss, v_loss, p_loss = ppo.update(episode, 96 ,k_epoch, i,model_dir)
         history[i,0]=ave_reward
-        vessl.log(step=i, payload={'train_average_reward': ave_reward})
+        vessl.log(step=i, payload={'train_reward': ave_reward})
         vessl.log(step=i, payload={'ave_loss': ave_loss})
         vessl.log(step=i, payload={'v_loss': v_loss})
         vessl.log(step=i, payload={'p_loss': p_loss})

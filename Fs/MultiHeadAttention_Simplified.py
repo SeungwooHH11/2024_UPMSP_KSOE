@@ -56,7 +56,7 @@ class Transformer(nn.Module):
 
     def forward(self, state, state_mask=None):
         state_embedded = self.embedding(state)
-        output,scores = self.attention(state, state, state, state_mask)
+        output,scores = self.attention(state_embedded, state_embedded, state_embedded, state_mask)
         result = torch.cat((state_embedded, output), dim=2)
         return result,scores
 

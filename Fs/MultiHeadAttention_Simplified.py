@@ -8,7 +8,7 @@ device='cuda'
 
 class Attention(nn.Module):
     def __init__(self, d_model):
-        super(MultiHeadAttention, self).__init__()
+        super(Attention, self).__init__()
         
         self.d_model = d_model
         self.d_k = d_model

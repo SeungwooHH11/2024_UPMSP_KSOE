@@ -346,7 +346,7 @@ class PMSPScheduler:
             # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
             jobs_u_s[job_index][-3]=max((current_time+machine_matrix[chosen_index,0])-jobs_u_s[job_index][-4],0)
             tardy=self.calculate_tardy(jobs_u_s,current_time)/100.0
-            reward=past_tardy-tardy+temp_setup
+            reward=past_tardy-tardy-temp_setup/100.0
             total_reward+=reward
             past_tardy=tardy
             

@@ -19,7 +19,7 @@ class Attention(nn.Module):
         self.out = nn.Linear(d_model, d_model)
 
     def attention(self, q, k, v, mask=None):
-        scores = torch.matmul(q, k) / math.sqrt(self.d_k)
+        scores = torch.matmul(q, k.transpose(2,1)) / math.sqrt(self.d_k)
         # q (batch_size, seq_len, d_k)
         # k (batch_size, d_k, seq_len)
         # scores (batch_size, seq_len, seq_len)

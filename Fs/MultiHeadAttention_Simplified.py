@@ -64,10 +64,11 @@ class MLP(nn.Module):
     def __init__(self, input_size, output_size):
         super(MLP, self).__init__()
 
-        self.fc1 = nn.Linear(input_size, 64)
-        self.fc2 = nn.Linear(64, 128)
-        self.fc3 = nn.Linear(128, 64)
-        self.fc4 = nn.Linear(64, output_size)
+        self.fc1 = nn.Linear(input_size, 512)
+        self.fc2 = nn.Linear(512, 256)
+        self.fc3 = nn.Linear(256, 128)
+        self.fc4 = nn.Linear(128, 64)
+        self.fc5 = nn.Linear(64, output_size)
         self.initialize_weights()
 
     def initialize_weights(self):
@@ -86,7 +87,8 @@ class MLP(nn.Module):
         x = F.relu(self.fc1(x))
         x = F.relu(self.fc2(x))
         x = F.relu(self.fc3(x))
-        x = self.fc4(x)
+        x = F.relu(self.fc4(x))
+        x = self.fc5(x)
         return x
 
 class PPO(nn.Module):

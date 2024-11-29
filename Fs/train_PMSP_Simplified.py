@@ -23,10 +23,12 @@ if __name__=="__main__":
 
     device='cuda'
     
-    PMSP=PMSPScheduler(12,72,72,3,(10,20),[1,1,1,1,1,1,1.5,1.5,1.5,1.5,1.5,1.5],1,120,120,(5,15),8)
+    #PMSP=PMSPScheduler(12,72,72,3,(10,20),[1,1,1,1,1,1,1.5,1.5,1.5,1.5,1.5,1.5],1,120,120,(5,15),8)
+    PMSP=PMSPScheduler(6,24,24,3,(10,20),[1,1,1,1.5,1.5,1.5],1,80,80,(5,15),4)
+    
     #pr=PMSPScheduler(10,0,20,15,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,0,60,(5,15),10)
     #pr=PMSPScheduler(10,140,20,8,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,60,60,(5,15),10)
-    ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, machine_len=12, d_model=512, num_heads=8, fea_len=21,num_layers=1,dim_feedforward=1024).to(device)
+    ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, machine_len=6, d_model=512, num_heads=8, fea_len=13,num_layers=1,dim_feedforward=1024).to(device)
 
     number_of_validation=10
     number_of_validation_batch=100
@@ -72,7 +74,7 @@ if __name__=="__main__":
     for i in range(number_of_iteration):
         
         total_tardy,ave_tardy,episode=PMSP.run_simulation(number_of_problem,number_of_batch,ppo,'RL')
-        ave_loss, v_loss, p_loss = ppo.update(episode, 192 ,k_epoch, i,model_dir)
+        ave_loss, v_loss, p_loss = ppo.update(episode, 96 ,k_epoch, i,model_dir)
         history[i,0]=total_tardy
         vessl.log(step=i, payload={'train_average_reward': total_tardy})
         vessl.log(step=i, payload={'ave_loss': ave_loss})

@@ -23,7 +23,7 @@ if __name__=="__main__":
 
     device='cuda'
     
-    PMSP=PMSPScheduler(12,48,48,3,(10,20),[1,1,1,1,1,1,1.5,1.5,1.51.5,1.5,1.5],1,80,80,(5,15),8)
+    PMSP=PMSPScheduler(12,48,48,3,(10,20),[1,1,1,1,1,1,1.5,1.5,1.5,1.5,1.5,1.5],1,80,80,(5,15),8)
     #pr=PMSPScheduler(10,0,20,15,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,0,60,(5,15),10)
     #pr=PMSPScheduler(10,140,20,8,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,60,60,(5,15),10)
     ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, machine_len=12, d_model=512, num_heads=8, fea_len=21,num_layers=1,dim_feedforward=1024).to(device)

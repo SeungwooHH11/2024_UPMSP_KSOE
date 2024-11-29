@@ -213,8 +213,9 @@ class PMSPScheduler:
                 
             
             #print(pd.DataFrame(state))
+            state[:,[0,1,2,3+self.setup_num]]=state[:,[0,1,2,3+self.setup_num]]/100.0
+            
             state_tensor=torch.tensor(state.copy(),dtype=torch.float32).unsqueeze(0).to(device) # batch, n+m, fea
-            state_tensor[:,[0,1,3+self.setup_num]]=state_tensor[:,[0,1,3+self.setup_num]]/100.0
             if mod=='RL':
                 action,pi,_,_=ppo.get_action(state_tensor,mask,ans=None)
 

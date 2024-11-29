@@ -23,22 +23,22 @@ if __name__=="__main__":
 
     device='cuda'
     
-    PMSP=PMSPScheduler(6,12,12,7,(10,20),[1,1,1,1.5,1.5,1.5],1,40,40,(5,15),4)
+    PMSP=PMSPScheduler(12,48,48,3,(10,20),[1,1,1,1,1,1,1.5,1.5,1.51.5,1.5,1.5],1,80,80,(5,15),8)
     #pr=PMSPScheduler(10,0,20,15,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,0,60,(5,15),10)
     #pr=PMSPScheduler(10,140,20,8,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,60,60,(5,15),10)
-    ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, machine_len=6, d_model=512, num_heads=8, fea_len=13,num_layers=1,dim_feedforward=1024).to(device)
+    ppo=PPO(learning_rate=0.001, clipping_ratio=0.2, machine_len=12, d_model=512, num_heads=8, fea_len=21,num_layers=1,dim_feedforward=1024).to(device)
 
     number_of_validation=10
     number_of_validation_batch=100
     number_of_problem=4# 한번에 몇개의 문제를
     number_of_batch=8 # 문제당 몇 episode씩 한번에 학습할껀지
     number_of_trial=1  #1, 10, 100, 1000 #이를 몇번 반복할껀지
-    number_of_iteration=int(1001/number_of_trial)  # 전체 iteration #iteration 단위로 문제 변화
+    number_of_iteration=int(401/number_of_trial)  # 전체 iteration #iteration 단위로 문제 변화
     validation=[]
     validation_step = 40
     num_of_meta=6
     history = np.zeros((number_of_iteration * number_of_trial,2))
-    validation_history=np.zeros((int(1001/validation_step)+10,number_of_validation))
+    validation_history=np.zeros((int(401/validation_step)+10,number_of_validation))
     control=np.zeros((num_of_meta,number_of_validation))
     validation_job=[]
     validation_setup=[]
@@ -72,7 +72,7 @@ if __name__=="__main__":
     for i in range(number_of_iteration):
         
         total_tardy,ave_tardy,episode=PMSP.run_simulation(number_of_problem,number_of_batch,ppo,'RL')
-        ave_loss, v_loss, p_loss = ppo.update(episode, 96 ,k_epoch, i,model_dir)
+        ave_loss, v_loss, p_loss = ppo.update(episode, 192 ,k_epoch, i,model_dir)
         history[i,0]=total_tardy
         vessl.log(step=i, payload={'train_average_reward': total_tardy})
         vessl.log(step=i, payload={'ave_loss': ave_loss})

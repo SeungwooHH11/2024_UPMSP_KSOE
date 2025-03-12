@@ -4,15 +4,18 @@ import heapq
 import numpy as np
 import matplotlib.pyplot as plt
 from MultiHeadAttention_Simplified import *
-random.seed(42)
+random.seed(0)
 import seaborn as sns
 import torch
+torch.cuda.empty_cache()
 device='cuda'
 # 원본 논문 세팅 PMSPScheduler(12,80,10,5,(5,15),[1,1,1,1,1,1,1.5,1.5,1.5,1.5,1.5,1.5],0,20,10,(5,15),10)
 # Proposed setting PMSPScheduler(10,100,20,20,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,50,50,(5,15),10)
 # Proposed setting PMSPScheduler(10,0,20,25,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,40,40,(5,15),10)
 # Proposed setting PMSPScheduler(10,200,20,15,(10,20),[1,1,1,1,1,1.5,1.5,1.5,1.5,1.5],1,60,60,(5,15),10)
 
+def random_integers(n, m):
+    return [random.randint(0, n-1) for _ in range(m)]
 
 class PMSPScheduler:
     def __init__(self, num_machines=12, initial_jobs=80, additional_jobs=10, additional_arrivals=5, 
@@ -37,7 +40,7 @@ class PMSPScheduler:
         
         self.tardiness_factor=0.1
         self.duedate_range=0.5
-        self.K=7
+        self.K=5
         self.sim_type=sim_type
         self.schedule = []
         self.machine_speed=machine_speed
@@ -61,7 +64,7 @@ class PMSPScheduler:
                 if self.sim_type==0:
                     tardy_time=np.random.uniform(max(arrival_time+processing_time+10,self.MP*(1-self.tardiness_factor-self.duedate_range/2)),self.MP*(1-self.tardiness_factor+self.duedate_range/2))
                 if self.sim_type==1:
-                    tardy_time=arrival_time+np.random.uniform(1,self.K)*((self.processing_time_range[0]+self.processing_time_range[1])/2+(self.setup_range[0]+self.setup_range[1])/2)
+                    tardy_time=arrival_time+np.random.uniform(1,self.K)*((self.processing_time_range[0]+self.processing_time_range[1])/2/1.25+(self.setup_range[0]+self.setup_range[1])/2/2)
                 setup_type=np.random.randint(0, self.setup_num)
                 property_j=[job_id,arrival_time,processing_time,setup_type,tardy_time,0.0,1.0, 0.0]
                 jobs = np.vstack([jobs, np.array(property_j)])
@@ -76,7 +79,7 @@ class PMSPScheduler:
                     if self.sim_type==0:
                         tardy_time=np.random.uniform(max(arrival_time+processing_time+10,self.MP*(1-self.tardiness_factor-self.duedate_range/2)),self.MP*(1-self.tardiness_factor+self.duedate_range/2))
                     if self.sim_type==1:
-                        tardy_time=arrival_time+np.random.uniform(1,self.K)*((self.processing_time_range[0]+self.processing_time_range[1])/2+(self.setup_range[0]+self.setup_range[1])/2)
+                        tardy_time=arrival_time+np.random.uniform(1,self.K)*((self.processing_time_range[0]+self.processing_time_range[1])/2/1.25+(self.setup_range[0]+self.setup_range[1])/2/2)
                     setup_type=np.random.randint(0, self.setup_num)
                     property_j=[job_id,arrival_time,processing_time,setup_type,tardy_time,0.0,0.0, 0.0]
                     jobs = np.vstack([jobs, np.array(property_j)])
@@ -105,9 +108,10 @@ class PMSPScheduler:
                 property_j = [job_id, arrival_time, processing_time, setup_type, tardy_time, 0.0, 0.0, 0.0]
                 jobs = np.vstack([jobs, np.array(property_j)])
                 job_count += 1
+        machine_setup=random_integers(self.setup_num,self.num_machines)
         # jobs
         # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
-        return jobs, setup
+        return jobs, setup,machine_setup
 
     def show_ideal_queue_graph(self,jobs,time_horizon):
         queue_x=np.linspace(0,time_horizon,time_horizon*10)
@@ -128,6 +132,7 @@ class PMSPScheduler:
         min_indices = [i for i, x in enumerate(machine_end_time) if x == min_value]
         # 최소값의 인덱스 중 랜덤하게 하나를 선택합니다.
         chosen_index = random.choice(min_indices)
+        #chosen_index=min_indices[0]
         return min_value, chosen_index
 
     def calculate_tardy(self, job_u_s,current_time):
@@ -139,20 +144,26 @@ class PMSPScheduler:
         return tardy_occured+tardy_yet
  
     
-    def schedule_jobs(self,jobs,setup,episode,ppo,mod):
+    def schedule_jobs(self,jobs,setup,machine_setup,episode,ppo,mod):
         machines = []
         jobss = []
         start_times = []  # start times as floats
         durations = []      # durations as floats
         total_tardy=0
         total_reward=0
-        
         past_tardy=0
         # 각 머신의 작업 큐를 저장할 리스트 (우선순위 큐로 구현)
         machine_matrix=np.zeros((self.num_machines,3))
+        machine_matrix[:,2]=machine_setup
         machine_matrix[:,1]=self.machine_speed
         # remainning processing time,  speed, current setup
-        
+        job_array=[]  # pt / st / dt / ST
+        machine_array=[] # rp / sp /ST
+        agent_array=[] # chosen index
+        action_array=[] # job index
+        job_pr_array=[]
+        mask_array=[] # mask
+        action_PR_array=[] # pr
         current_time=0.0
         # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
         #mask가 1이면 사용 가능한 job
@@ -162,8 +173,8 @@ class PMSPScheduler:
         # state / processing time / setup /
         state=np.zeros((job_len+self.num_machines,5+self.setup_num*2))
         
-        for i in range(job_len):
-
+        for step in range(job_len):
+            
             min_value, chosen_index=self.get_agent(machine_matrix[:,0].copy()) # batch, n+m, fea
             current_time+=min_value
             
@@ -189,8 +200,8 @@ class PMSPScheduler:
 
             mask=torch.tensor(jobs_u_s[:,-2].copy(),dtype=torch.float32).unsqueeze(0).to(device) #(1, seq)
             # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
-
-
+            
+            
             state[:job_len,[0,1]]=jobs_u_s[:,[2,4]].copy()
             state[:job_len,1]=state[:job_len,1]-current_time
 
@@ -205,20 +216,154 @@ class PMSPScheduler:
                 state[i, 3 + int(jobs_u_s[i, 3])] = 1
                 state[i, 2] = setup[int(machine_matrix[chosen_index, 2])][int(jobs_u_s[i][3])]
                 state[i,5+self.setup_num]=0
+                
                 state[i,5+self.setup_num+int(current_machine_setup)]=1
+                
             for i in range(self.num_machines):
                 machine_setup=state[i+job_len,5+self.setup_num]
+                
                 state[i+job_len,5+self.setup_num]=0
                 state[i+job_len,5+self.setup_num+int(machine_setup)]=1
                 
             
             #print(pd.DataFrame(state))
             #state[:,[0,1,2,3+self.setup_num]]=state[:,[0,1,2,3+self.setup_num]]/100.0
+            # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
+            # pr tardy setup setup type
+            temp_job=np.zeros((job_len,4))
+            temp_job[:,[0,1,2]]=state[:job_len,[0,1,2]].copy()
+            temp_job[:,3]=jobs_u_s[:,3].copy()
+            job_array.append(temp_job)
+            machine_array.append(machine_matrix.copy())
+            agent_array.append(chosen_index)
+            mask_array.append(mask.cpu().numpy().copy())
+            setup_set=np.zeros((self.setup_num,5))
+            for i in range(self.setup_num):
+                condition = (jobs_u_s[:, -2] == 1) & (jobs_u_s[:, 3] == i)
+                filtered_rows = jobs_u_s[condition]
+                if filtered_rows.size != 0:
+                    setup_set[i,0]=len(filtered_rows) 
+                    setup_set[i,1]=filtered_rows[:,4].mean()-current_time
+                    setup_set[i,2]=filtered_rows[:,2].mean()
+                else:
+                    setup_set[i,[0,1,2]]=0
+                    
+                condition=(machine_matrix[:,2]==i)
+                
+                filtered_rows = machine_matrix[condition]
+                if filtered_rows.size !=0:
+                    setup_set[i,3]=len(filtered_rows)
+                    setup_set[i,4]=filtered_rows[:,0].mean()
+                else:
+                    setup_set[i,[3,4]]=0
             
             state_tensor=torch.tensor(state.copy(),dtype=torch.float32).unsqueeze(0).to(device)/100.0 # batch, n+m, fea
             if mod=='RL':
-                action,pi,_,_=ppo.get_action(state_tensor,mask,ans=None)
-
+                action,pi,_,_,_=ppo.get_action(state_tensor,mask,action_mask=mask,ans=None)
+            if mod=='masked_RL':
+                action_mask=torch.zeros((1,job_len)).to(device) #(1, seq)
+                rows_with_one = (jobs_u_s[:, -2] == 1).nonzero()[0]
+                pt_average = np.zeros(len(rows_with_one))
+                st_average = np.zeros(len(rows_with_one))
+                for i in range(len(rows_with_one)):
+                    n = rows_with_one[i]
+                    # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
+                    # remainning processing time, current setup, speed
+                    pt_average[i] = jobs_u_s[n][2]/machine_matrix[chosen_index,1]
+                    st_average[i] = setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[n][3])]
+                pt_a = pt_average.mean()+0.01
+                st_a = st_average.mean()+0.01
+                z = np.zeros((len(rows_with_one),4))
+                for i in range(len(rows_with_one)):
+                    n = rows_with_one[i]
+                    # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
+                    # remainning processing time,  speed current setup
+                    #z[i,0] = jobs_u_s[n][2]/machine_matrix[chosen_index,1]+setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[n][3])]
+                    st = setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[n][3])]
+                    pt= jobs_u_s[n][2]/machine_matrix[chosen_index,1]                    
+                    z[i,0] = -np.log(1/pt*math.exp(-max(current_time+st+pt-jobs_u_s[n][4],0)/pt_a)*math.exp(-st/st_a))
+                    z[i,1] = max(jobs_u_s[n][4],jobs_u_s[n][2]+current_time)
+                    z[i,2] = -(1/pt*(1-(jobs_u_s[n][4]-pt-current_time)/pt))
+                    z[i,3] = np.exp(st)+jobs_u_s[n][4]-pt
+                    #z[i,4] = st*setup_set[int(jobs_u_s[n][3])][3]+jobs_u_s[n][4]-current_time
+                    #z[i,3] =np.exp(st)+pt
+                z=z.T
+                action_list=[]
+                for i, row in enumerate(z):
+                    min_indices = np.where(row == row.min())[0]  # 최소값의 모든 열 좌표 찾기
+                    temp_list=[]
+                    for j in min_indices:
+                        action_mask[0,rows_with_one[j]]=1
+                        temp_list.append(rows_with_one[j])
+                    
+                    
+                    
+                    action_list.append(temp_list)
+                    
+                action,pi,_,_,_=ppo.get_action(state_tensor,mask,action_mask=action_mask,ans=None)
+                action_array.append(action.item())
+                switch=0
+                temp_PR_array=np.zeros(4)
+                for e,temp_list in enumerate(action_list):
+                    if action in temp_list:
+                        switch=1
+                        temp_PR_array[e]=1
+                        
+                action_PR_array.append(temp_PR_array)
+                job_pr_array.append(action_list)
+                
+            if mod=='masked_RL_GP':
+                action_mask=torch.zeros((1,job_len)).to(device) #(1, seq)
+                rows_with_one = (jobs_u_s[:, -2] == 1).nonzero()[0]
+                pt_average = np.zeros(len(rows_with_one))
+                st_average = np.zeros(len(rows_with_one))
+                for i in range(len(rows_with_one)):
+                    n = rows_with_one[i]
+                    # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
+                    # remainning processing time, current setup, speed
+                    pt_average[i] = jobs_u_s[n][2]/machine_matrix[chosen_index,1]
+                    st_average[i] = setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[n][3])]
+                pt_a = pt_average.mean()+0.01
+                st_a = st_average.mean()+0.01
+                z = np.zeros((len(rows_with_one),5))
+                for i in range(len(rows_with_one)):
+                    n = rows_with_one[i]
+                    # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
+                    # remainning processing time,  speed current setup
+                    #z[i,0] = jobs_u_s[n][2]/machine_matrix[chosen_index,1]+setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[n][3])]
+                    st = setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[n][3])]
+                    pt= jobs_u_s[n][2]/machine_matrix[chosen_index,1]                    
+                    z[i,0] = -np.log(1/pt*math.exp(-max(current_time+st+pt-jobs_u_s[n][4],0)/pt_a)*math.exp(-st/st_a))
+                    z[i,1] = max(jobs_u_s[n][4],jobs_u_s[n][2]+current_time)
+                    z[i,2] = -(1/pt*(1-(jobs_u_s[n][4]-pt-current_time)/pt))
+                    z[i,3] = np.exp(st)+jobs_u_s[n][4]-pt
+                    z[i,4] = st*setup_set[int(jobs_u_s[n][3])][3]+jobs_u_s[n][4]-current_time
+                    #z[i,3] =np.exp(st)+pt
+                z=z.T
+                action_list=[]
+                for i, row in enumerate(z):
+                    min_indices = np.where(row == row.min())[0]  # 최소값의 모든 열 좌표 찾기
+                    temp_list=[]
+                    for j in min_indices:
+                        action_mask[0,rows_with_one[j]]=1
+                        temp_list.append(rows_with_one[j])
+                    
+                    
+                    
+                    action_list.append(temp_list)
+                    
+                action,pi,_,_,_=ppo.get_action(state_tensor,mask,action_mask=action_mask,ans=None)
+                action_array.append(action.item())
+                switch=0
+                temp_PR_array=np.zeros(6)
+                for e,temp_list in enumerate(action_list):
+                    if action in temp_list:
+                        switch=1
+                        temp_PR_array[e]=1
+                        
+                action_PR_array.append(temp_PR_array)
+                job_pr_array.append(action_list)
+                
             if mod=='SSPT':
                 rows_with_one = (jobs_u_s[:, -2] == 1).nonzero()[0]
                 z = np.zeros(len(rows_with_one))
@@ -233,6 +378,7 @@ class PMSPScheduler:
 
                 # 최소값의 인덱스들 찾기
                 min_indices = np.where(z == min_value)[0]
+                #print(len(min_indices))
                 # 최소값 중 무작위로 하나 선택
                 min_index= np.random.choice(min_indices)
                 min_index = rows_with_one[min_index]
@@ -258,18 +404,18 @@ class PMSPScheduler:
                     # remainning processing time, speed , current setup
                     st = setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[n][3])]
                     pt= jobs_u_s[n][2]/machine_matrix[chosen_index,1]                    
-                    z[i] = np.log(1/pt*math.exp(-max(current_time+st+pt-jobs_u_s[n][4],0)/pt_a)*math.exp(-st/st_a))
-                min_value = np.max(z)
+                    z[i] = -np.log(1/pt*math.exp(-max(current_time+st+pt-jobs_u_s[n][4],0)/pt_a)*math.exp(-st/st_a))
+                    
+                min_value = np.min(z)
 
                 # 최소값의 인덱스들 찾기
                 min_indices = np.where(z == min_value)[0]
                 # 최소값 중 무작위로 하나 선택
                 
                 min_index = np.random.choice(min_indices)
-                
-                
                 min_index = rows_with_one[min_index]
                 action = min_index
+                
 
             if mod == 'MDD':
                 rows_with_one = (jobs_u_s[:, -2] == 1).nonzero()[0]
@@ -282,6 +428,7 @@ class PMSPScheduler:
                 min_index = np.argmin(z)
                 min_index = rows_with_one[min_index]
                 action = min_index
+            '''
             if mod == 'FIFO':
                 rows_with_one = (jobs_u_s[:, -2] == 1).nonzero()[0]
                 z = np.zeros(len(rows_with_one))
@@ -298,7 +445,7 @@ class PMSPScheduler:
                 min_index = np.random.choice(min_indices)
                 min_index = rows_with_one[min_index]
                 action = min_index
-
+            '''
             if mod == 'COVERT':
                 rows_with_one = (jobs_u_s[:, -2] == 1).nonzero()[0]
                 z = np.zeros(len(rows_with_one))
@@ -317,7 +464,7 @@ class PMSPScheduler:
                 min_index = np.random.choice(min_indices)
                 min_index = rows_with_one[min_index]
                 action = min_index
-            if mod == 'SST':
+            if mod == 'SPST':
                 rows_with_one = (jobs_u_s[:, -2] == 1).nonzero()[0]
                 z = np.zeros(len(rows_with_one))
                 for i in range(len(rows_with_one)):
@@ -325,7 +472,46 @@ class PMSPScheduler:
                     # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
                     # remainning processing time, speed, current setup
                     st = setup[int(machine_matrix[chosen_index, 2])][int(jobs_u_s[n][3])]
-                    z[i] = st
+                    pt = jobs_u_s[n][2] / machine_matrix[chosen_index, 1]
+                    z[i] = np.exp(st)+jobs_u_s[n][4]-pt
+                min_value = np.min(z)
+
+                # 최소값의 인덱스들 찾기
+                min_indices = np.where(z == min_value)[0]
+                # 최소값 중 무작위로 하나 선택
+                min_index = np.random.choice(min_indices)
+                min_index = rows_with_one[min_index]
+                action = min_index
+            if mod == 'SSSPT':
+                rows_with_one = (jobs_u_s[:, -2] == 1).nonzero()[0]
+                z = np.zeros(len(rows_with_one))
+                for i in range(len(rows_with_one)):
+                    n = rows_with_one[i]
+                    # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
+                    # remainning processing time, speed, current setup
+                    st = setup[int(machine_matrix[chosen_index, 2])][int(jobs_u_s[n][3])]
+                    pt = jobs_u_s[n][2] / machine_matrix[chosen_index, 1]
+                    z[i] = np.exp(st)+pt
+                min_value = np.min(z)
+
+                # 최소값의 인덱스들 찾기
+                min_indices = np.where(z == min_value)[0]
+                # 최소값 중 무작위로 하나 선택
+                min_index = np.random.choice(min_indices)
+                min_index = rows_with_one[min_index]
+                action = min_index
+            if mod=='GP1':
+                rows_with_one = (jobs_u_s[:, -2] == 1).nonzero()[0]
+                z = np.zeros(len(rows_with_one))
+                for i in range(len(rows_with_one)):
+                    n = rows_with_one[i]
+                    # job_id / arrival_time / processing_time / familiy_type / tardy_time / tardy_occur /mask / processed 여부
+                    # remainning processing time,  speed current setup
+                    #z[i,0] = jobs_u_s[n][2]/machine_matrix[chosen_index,1]+setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[n][3])]
+                    st = setup[int(machine_matrix[chosen_index,2])][int(jobs_u_s[n][3])]
+                    dt=jobs_u_s[n][4]-current_time
+                    
+                    z[i]=st*setup_set[int(jobs_u_s[n][3])][3]+dt
                 min_value = np.min(z)
 
                 # 최소값의 인덱스들 찾기
@@ -353,7 +539,7 @@ class PMSPScheduler:
             
            
             #episode.append([job_state.clone(), machine_state.clone(), action, pi, reward, dones, mask, job_next_state.clone(), machine_next_state.clone()])
-            if i==jobs.shape[0]-1:
+            if step==jobs.shape[0]-1:
                 done=0
             else:
                 done=1
@@ -365,7 +551,7 @@ class PMSPScheduler:
             start_times.append(current_time)
             durations.append(machine_matrix[chosen_index,0])
             
-        return machines,jobss,start_times,durations,episode,total_tardy,total_reward
+        return episode,total_tardy,total_reward
      
     def plot_gantt(self,machines,jobs,start_times,durations):
                 # Prepare data for Gantt chart
